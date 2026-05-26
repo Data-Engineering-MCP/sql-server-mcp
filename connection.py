@@ -2,11 +2,12 @@ import os
 import pyodbc
 from dotenv import load_dotenv
 from sqlserver_mcp.tools.ProcessReq import ProcessReqMixin
+from sqlserver_mcp.tools.ListTables import ListTablesMixin
 
 load_dotenv()
 
 
-class SQLServerConnection(ProcessReqMixin):
+class SQLServerConnection(ProcessReqMixin, ListTablesMixin):
     def __init__(self):
         self.host = os.getenv("SQLSERVER_HOST", "localhost")
         self.port = os.getenv("SQLSERVER_PORT", "1433")

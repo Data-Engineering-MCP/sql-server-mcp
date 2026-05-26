@@ -35,7 +35,24 @@ class SQLServerMCPServer(mcp.server.Server):
                         },
                         "required": ["query"],
                     },
-                )
+                ),
+                types.Tool(
+                    name="list_tables",
+                    description=(
+                        "List all tables in the connected SQL Server database. "
+                        "Optionally filter by schema name. Returns table schema, name, and type."
+                    ),
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "schema": {
+                                "type": "string",
+                                "description": "Optional schema name to filter tables (e.g. 'dbo').",
+                            }
+                        },
+                        "required": [],
+                    },
+                ),
             ]
 
         @self.call_tool()
@@ -50,6 +67,8 @@ class SQLServerMCPServer(mcp.server.Server):
                     result = {"success": False, "error": "No query provided."}
                 else:
                     result = self.db.process_req(query)
+            elif name == "list_tables":
+                result = self.db.list_tables(schema=arguments.get("schema"))
             else:
                 result = {"success": False, "error": f"Unknown tool: {name}"}
 
