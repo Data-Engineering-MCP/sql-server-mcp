@@ -23,11 +23,12 @@ class SQLServerConnection(ProcessReqMixin):
 
     def get_connection(self) -> pyodbc.Connection:
         connection_string = (
-            f"DRIVER={{ODBC Driver 18 for SQL Server}};"
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
             f"SERVER={self.host},{self.port};"
             f"DATABASE={self.database};"
             f"UID={self.username};"
             f"PWD={self.password};"
             f"TrustServerCertificate={self.trust_cert};"
+            f"Encrypt=no;"
         )
         return pyodbc.connect(connection_string)
