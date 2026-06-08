@@ -1,8 +1,13 @@
 import os
 import pyodbc
 from dotenv import load_dotenv
-from sqlserver_mcp.tools.ProcessReq import ProcessReqMixin
-from sqlserver_mcp.tools.ListTables import ListTablesMixin
+from tools.ProcessReq import ProcessReqMixin
+from tools.ListTables import ListTablesMixin
+from tools.DescribeTable import DescribeTableMixin
+from tools.ExplainQuery import ExplainQueryMixin
+from tools.GetTableSample import GetTableSampleMixin
+from tools.GetColumnStats import GetColumnStatsMixin
+from tools.CompareTables import CompareTablesMixin
 
 load_dotenv()
 
@@ -15,7 +20,7 @@ load_dotenv()
 #   azure_ad_msi           - Azure AD Managed Identity
 
 
-class SQLServerConnection(ProcessReqMixin, ListTablesMixin):
+class SQLServerConnection(ProcessReqMixin, ListTablesMixin, DescribeTableMixin, ExplainQueryMixin, GetTableSampleMixin, GetColumnStatsMixin, CompareTablesMixin):
     def __init__(self):
         self.host = os.getenv("SQLSERVER_HOST", "localhost")
         self.port = os.getenv("SQLSERVER_PORT", "1433")

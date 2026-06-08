@@ -2,7 +2,7 @@ import json
 import logging
 import mcp.server
 import mcp.types as types
-from sqlserver_mcp.connection import SQLServerConnection
+from connection import SQLServerConnection
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,123 @@ class SQLServerMCPServer(mcp.server.Server):
                         "required": [],
                     },
                 ),
+                types.Tool(
+                    name="describe_table",
+                    description=(
+                        "Return column definitions and primary key info for a table. "
+                        "Includes column name, data type, nullability, default value, identity flag, and primary key flag."
+                    ),
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "table": {
+                                "type": "string",
+                                "description": "Table name to describe.",
+                            },
+                            "schema": {
+                                "type": "string",
+                                "description": "Schema name (default: 'dbo').",
+                            },
+                        },
+                        "required": ["table"],
+                    },
+                ),
+                types.Tool(
+                    name="explain_query",
+                    description=(
+                        "Return the estimated execution plan for a SQL query without executing it. "
+                        "Useful for query performance analysis."
+                    ),
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The SQL query to explain.",
+                            }
+                        },
+                        "required": ["query"],
+                    },
+                ),
+                types.Tool(
+                    name="get_table_sample",
+                    description=(
+                        "Return a sample of rows from a table (top N rows, max 100). "
+                        "Useful for quickly inspecting table contents."
+                    ),
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "table": {
+                                "type": "string",
+                                "description": "Table name to sample.",
+                            },
+                            "schema": {
+                                "type": "string",
+                                "description": "Schema name (default: 'dbo').",
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "description": "Number of rows to return (default: 10, max: 100).",
+                            },
+                        },
+                        "required": ["table"],
+                    },
+                ),
+                types.Tool(
+                    name="get_column_stats",
+                    description=(
+                        "Return statistics for a specific column: total rows, null count, distinct count, "
+                        "min, max, and average (for numeric columns)."
+                    ),
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "table": {
+                                "type": "string",
+                                "description": "Table name.",
+                            },
+                            "column": {
+                                "type": "string",
+                                "description": "Column name to analyse.",
+                            },
+                            "schema": {
+                                "type": "string",
+                                "description": "Schema name (default: 'dbo').",
+                            },
+                        },
+                        "required": ["table", "column"],
+                    },
+                ),
+                types.Tool(
+                    name="compare_tables",
+                    description=(
+                        "Compare the schema and row counts of two tables. "
+                        "Reports columns only in one table, type mismatches, and whether schemas match."
+                    ),
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "table1": {
+                                "type": "string",
+                                "description": "First table name.",
+                            },
+                            "table2": {
+                                "type": "string",
+                                "description": "Second table name.",
+                            },
+                            "schema1": {
+                                "type": "string",
+                                "description": "Schema for the first table (default: 'dbo').",
+                            },
+                            "schema2": {
+                                "type": "string",
+                                "description": "Schema for the second table (default: 'dbo').",
+                            },
+                        },
+                        "required": ["table1", "table2"],
+                    },
+                ),
             ]
 
         @self.call_tool()
@@ -69,6 +186,32 @@ class SQLServerMCPServer(mcp.server.Server):
                     result = self.db.process_req(query)
             elif name == "list_tables":
                 result = self.db.list_tables(schema=arguments.get("schema"))
+            elif name == "describe_table":
+                result = self.db.describe_table(
+                    table=arguments["table"],
+                    schema=arguments.get("schema", "dbo"),
+                )
+            elif name == "explain_query":
+                result = self.db.explain_query(query=arguments["query"])
+            elif name == "get_table_sample":
+                result = self.db.get_table_sample(
+                    table=arguments["table"],
+                    schema=arguments.get("schema", "dbo"),
+                    limit=arguments.get("limit", 10),
+                )
+            elif name == "get_column_stats":
+                result = self.db.get_column_stats(
+                    table=arguments["table"],
+                    column=arguments["column"],
+                    schema=arguments.get("schema", "dbo"),
+                )
+            elif name == "compare_tables":
+                result = self.db.compare_tables(
+                    table1=arguments["table1"],
+                    table2=arguments["table2"],
+                    schema1=arguments.get("schema1", "dbo"),
+                    schema2=arguments.get("schema2", "dbo"),
+                )
             else:
                 result = {"success": False, "error": f"Unknown tool: {name}"}
 

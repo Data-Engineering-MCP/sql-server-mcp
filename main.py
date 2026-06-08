@@ -6,7 +6,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import mcp.server.stdio
-from sqlserver_mcp.server import SQLServerMCPServer
+from server import SQLServerMCPServer
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
