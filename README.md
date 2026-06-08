@@ -52,17 +52,82 @@ pip install -r requirements.txt
 ```
 
 ### 4. Configure environment variables
-Copy the example file and fill in your SQL Server credentials:
+Edit `.env` and set the variables for your chosen authentication type.
 
-Edit `.env`:
+#### SQL Server Login (default)
 ```env
 SQLSERVER_HOST=your-server.database.windows.net
 SQLSERVER_PORT=1433
 SQLSERVER_DATABASE=your_database
+SQLSERVER_AUTH_TYPE=sql
 SQLSERVER_USERNAME=your_username
 SQLSERVER_PASSWORD=your_password
 SQLSERVER_TRUST_SERVER_CERTIFICATE=yes
 ```
+
+#### Windows Integrated Authentication
+```env
+SQLSERVER_HOST=your-server
+SQLSERVER_PORT=1433
+SQLSERVER_DATABASE=your_database
+SQLSERVER_AUTH_TYPE=windows
+SQLSERVER_TRUST_SERVER_CERTIFICATE=yes
+```
+No username or password required — uses the current OS/AD user.
+
+#### Azure AD Password
+```env
+SQLSERVER_HOST=your-server.database.windows.net
+SQLSERVER_PORT=1433
+SQLSERVER_DATABASE=your_database
+SQLSERVER_AUTH_TYPE=azure_ad_password
+SQLSERVER_USERNAME=user@yourtenant.onmicrosoft.com
+SQLSERVER_PASSWORD=your_password
+SQLSERVER_TRUST_SERVER_CERTIFICATE=yes
+```
+
+#### Azure AD Integrated (SSO / Kerberos)
+```env
+SQLSERVER_HOST=your-server.database.windows.net
+SQLSERVER_PORT=1433
+SQLSERVER_DATABASE=your_database
+SQLSERVER_AUTH_TYPE=azure_ad_integrated
+SQLSERVER_TRUST_SERVER_CERTIFICATE=yes
+```
+No credentials needed — uses the ambient Azure AD / Kerberos token.
+
+#### Azure AD Service Principal
+```env
+SQLSERVER_HOST=your-server.database.windows.net
+SQLSERVER_PORT=1433
+SQLSERVER_DATABASE=your_database
+SQLSERVER_AUTH_TYPE=azure_ad_service_principal
+SQLSERVER_CLIENT_ID=your-app-client-id
+SQLSERVER_CLIENT_SECRET=your-client-secret
+SQLSERVER_TRUST_SERVER_CERTIFICATE=yes
+```
+
+#### Azure AD Managed Identity (MSI)
+```env
+SQLSERVER_HOST=your-server.database.windows.net
+SQLSERVER_PORT=1433
+SQLSERVER_DATABASE=your_database
+SQLSERVER_AUTH_TYPE=azure_ad_msi
+# Optional: only needed when multiple managed identities are assigned
+# SQLSERVER_CLIENT_ID=your-managed-identity-client-id
+SQLSERVER_TRUST_SERVER_CERTIFICATE=yes
+```
+
+#### Authentication type reference
+
+| `SQLSERVER_AUTH_TYPE` | Required vars | Description |
+|---|---|---|
+| `sql` | `USERNAME`, `PASSWORD` | SQL Server login (default) |
+| `windows` | — | Windows Integrated / Trusted Connection |
+| `azure_ad_password` | `USERNAME`, `PASSWORD` | Azure AD user credentials |
+| `azure_ad_integrated` | — | Azure AD SSO / Kerberos token |
+| `azure_ad_service_principal` | `CLIENT_ID`, `CLIENT_SECRET` | App registration / service principal |
+| `azure_ad_msi` | `CLIENT_ID` *(optional)* | Azure Managed Identity |
 
 ---
 
