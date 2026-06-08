@@ -141,14 +141,14 @@ Add the following to your MCP settings (e.g. `~/.cursor/mcp.json` or Claude Desk
 {
   "mcpServers": {
     "sqlserver": {
-      "command": "/path/to/sqlserver-mcp-server/venv/bin/python",
-      "args": ["/path/to/sqlserver-mcp-server/sqlserver_mcp/main.py"]
+      "command": "/path/to/sql-server-mcp/venv/bin/python",
+      "args": ["/path/to/sql-server-mcp/main.py"]
     }
   }
 }
 ```
 
-Replace `/path/to/sqlserver-mcp-server` with the absolute path on your machine.
+Replace `/path/to/sql-server-mcp` with the absolute path to this repo on your machine.
 
 ---
 
@@ -183,26 +183,77 @@ List all tables in the connected database, optionally filtered by schema.
 
 **Returns:** `tables` array with `schema`, `table`, and `type` fields, plus `count`.
 
-**Example:**
-```
-List all tables in the dbo schema
-```
+---
+
+### `describe_table`
+Return full column definitions for a table.
+
+**Input:**
+| Parameter | Type   | Required | Description                        |
+|-----------|--------|----------|------------------------------------|
+| `table`   | string | Yes      | Table name                         |
+| `schema`  | string | No       | Schema name (default: `dbo`)       |
+
+**Returns:** `columns` array with `column`, `type`, `nullable`, `default`, `is_identity`, `is_primary_key`.
+
+---
+
+### `get_table_sample`
+Return a sample of rows from a table (TOP N).
+
+**Input:**
+| Parameter | Type    | Required | Description                              |
+|-----------|---------|----------|------------------------------------------|
+| `table`   | string  | Yes      | Table name                               |
+| `schema`  | string  | No       | Schema name (default: `dbo`)             |
+| `limit`   | integer | No       | Number of rows to return (default: `10`, max: `100`) |
+
+**Returns:** `columns`, `rows`, and `row_count`.
+
+---
+
+### `get_column_stats`
+Return statistics for a single column.
+
+**Input:**
+| Parameter | Type   | Required | Description                  |
+|-----------|--------|----------|------------------------------|
+| `table`   | string | Yes      | Table name                   |
+| `column`  | string | Yes      | Column name                  |
+| `schema`  | string | No       | Schema name (default: `dbo`) |
+
+**Returns:** `total_rows`, `non_null_count`, `null_count`, `null_pct`, `distinct_count`, `min_value`, `max_value`, `avg_value` (numeric columns only).
+
+---
+
+### `explain_query`
+Return the estimated execution plan for a query without executing it.
+
+**Input:**
+| Parameter | Type   | Required | Description              |
+|-----------|--------|----------|--------------------------|
+| `query`   | string | Yes      | SQL query to explain     |
+
+**Returns:** `plan` array of execution plan rows from `SET SHOWPLAN_ALL ON`. The query is **not** executed.
 
 ---
 
 ## Project Structure
 
 ```
-sqlserver-mcp-server/
-├── sqlserver_mcp/
-│   ├── main.py           # Entry point
-│   ├── server.py         # MCP server + tool registration
-│   ├── connection.py     # pyodbc connection management
-│   └── tools/
-│       ├── ProcessReq.py # process_req tool
-│       └── ListTables.py # list_tables tool
+sql-server-mcp/
+├── main.py              # Entry point
+├── server.py            # MCP server + tool registration
+├── connection.py        # pyodbc connection + auth management
+├── tools/
+│   ├── ProcessReq.py    # process_req tool
+│   ├── ListTables.py    # list_tables tool
+│   ├── DescribeTable.py # describe_table tool
+│   ├── GetTableSample.py# get_table_sample tool
+│   ├── GetColumnStats.py# get_column_stats tool
+│   └── ExplainQuery.py  # explain_query tool
 ├── requirements.txt
-├── .env.example
+├── .env
 └── README.md
 ```
 
@@ -210,8 +261,12 @@ sqlserver-mcp-server/
 
 ## Troubleshooting
 
-**`ModuleNotFoundError: No module named 'sqlserver_mcp'`**
-Run the server using the full path to the venv Python binary, not the system Python.
+**`ModuleNotFoundError: No module named 'tools'` / `No module named 'connection'`**
+Run `main.py` using the venv Python binary with its full path, e.g.:
+```bash
+/path/to/sql-server-mcp/venv/bin/python /path/to/sql-server-mcp/main.py
+```
+Do not use the system Python or run from a different working directory.
 
 **`Can't open lib 'ODBC Driver 17 for SQL Server'`**
 Install `unixodbc` and `msodbcsql17` as described in the Prerequisites section.
